@@ -1,0 +1,45 @@
+---
+const PROGRAM_ID = 'C6AJ43ZpzPLtmcwDS1FQP7cQXtWHNwsLty5ijdLTxzmK';
+---
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0 grid-bg opacity-60"></div>
+  <div class="absolute inset-0 bg-glow opacity-90 pointer-events-none"></div>
+  <div class="container-x relative pt-20 pb-24 md:pt-28 md:pb-32">
+    <div class="badge mb-6"><span class="dot-pulse"></span><span>Live on Solana Devnet</span></div>
+    <h1 class="text-4xl md:text-7xl font-bold tracking-tight text-white leading-[1.04] max-w-4xl">
+      Solana agents are stateless.
+      <span class="block text-accent">We're the memory layer.</span>
+    </h1>
+    <p class="mt-6 text-lg md:text-xl text-soft max-w-2xl leading-relaxed">
+      Locus is the Solana protocol for verifiable AI memory. Memory roots committed on-chain.
+      Pay-per-query in SOL. Cryptographic retrieval attestations for every AI-driven action.
+    </p>
+
+    <div class="mt-10 flex flex-wrap gap-3">
+      <a class="btn-primary" target="_blank" rel="noopener" href={`https://explorer.solana.com/account/${PROGRAM_ID}?cluster=devnet`}>
+        View program on Solana
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+      </a>
+      <a class="btn" href="/whitepaper">Read the whitepaper →</a>
+      <a class="btn" target="_blank" rel="noopener" href="https://github.com/Lumi-node/locus">GitHub →</a>
+    </div>
+
+    <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {[
+        { num: '100%', label: 'HAT recall' },
+        { num: '70×',   label: 'faster than HNSW' },
+        { num: '11M+',  label: 'tokens of context' },
+        { num: '0.51ms',label: 'retrieval latency' },
+      ].map(s => (
+        <div class="card text-center">
+          <div class="text-3xl md:text-4xl font-bold text-accent tabular-nums">{s.num}</div>
+          <div class="text-[11px] uppercase tracking-[0.2em] text-muted mt-2">{s.label}</div>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-8 text-xs text-muted mono">
+      program: <span class="text-accent">{PROGRAM_ID}</span>
+    </div>
+  </div>
+</section>

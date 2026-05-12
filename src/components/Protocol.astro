@@ -1,0 +1,81 @@
+---
+---
+<section class="border-y border-line/60 bg-surface/40">
+  <div class="container-x py-24 md:py-32">
+    <div class="max-w-2xl mb-12">
+      <div class="badge mb-5"><span class="dot-pulse"></span><span>How it works</span></div>
+      <h2 class="text-3xl md:text-5xl font-bold text-white tracking-tight leading-tight">
+        Two surfaces. <span class="text-accent">One primitive.</span>
+      </h2>
+      <p class="mt-6 text-lg text-soft">
+        Memory data is mutable and cheap — it lives off-chain in ARMS.
+        Memory <em>provenance</em> is immutable and cheap — it lives on-chain as a 32-byte hash plus per-query receipts.
+      </p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-5">
+      <div class="card">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="font-mono text-accent text-xl font-bold">commit_memory</span>
+          <span class="badge !text-[10px] !px-2 !py-0.5">owner only</span>
+        </div>
+        <p class="text-soft leading-relaxed">
+          The agent owner computes a Merkle root over their current ARMS memory state and posts it on-chain.
+          The <code class="font-mono text-accent text-sm bg-accent/5 px-1.5 py-0.5 rounded">AgentMemory</code> PDA's version increments. Subsequent retrievals reference this version.
+        </p>
+        <pre class="mt-5 rounded-lg bg-ink/60 border border-line/60 p-4 font-mono text-xs leading-relaxed text-soft overflow-x-auto whitespace-pre"><code is:raw>{`// programs/locus/src/lib.rs
+pub fn commit_memory(ctx: Context<CommitMemory>, root: [u8; 32]) -> Result<()> {
+  let agent = &mut ctx.accounts.agent_memory;
+  agent.memory_root = root;
+  agent.version += 1;
+  agent.last_updated = Clock::get()?.unix_timestamp;
+  emit!(MemoryCommitted { agent: agent.key(), version, root, timestamp });
+  Ok(())
+}`}</code></pre>
+      </div>
+
+      <div class="card">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="font-mono text-accent text-xl font-bold">attest_retrieval</span>
+          <span class="badge !text-[10px] !px-2 !py-0.5">anyone, pays SOL</span>
+        </div>
+        <p class="text-soft leading-relaxed">
+          A requester pays <code class="font-mono text-accent text-sm bg-accent/5 px-1.5 py-0.5 rounded">read_fee_lamports</code> in SOL to the agent owner.
+          A <code class="font-mono text-accent text-sm bg-accent/5 px-1.5 py-0.5 rounded">RetrievalAttestation</code> PDA is created on-chain with the query hash, result hash, memory root snapshot, and version.
+        </p>
+        <pre class="mt-5 rounded-lg bg-ink/60 border border-line/60 p-4 font-mono text-xs leading-relaxed text-soft overflow-x-auto whitespace-pre"><code is:raw>{`// programs/locus/src/lib.rs
+pub fn attest_retrieval(
+  ctx: Context<AttestRetrieval>,
+  query_hash: [u8; 32],
+  result_hash: [u8; 32],
+  nonce: u64,
+) -> Result<()> {
+  // fee transfer: requester -> owner
+  system_program::transfer(..., agent.read_fee_lamports)?;
+  // new attestation PDA, immutable
+  attestation.query_hash = query_hash;
+  attestation.result_hash = result_hash;
+  attestation.memory_root = agent.memory_root;
+  Ok(())
+}`}</code></pre>
+      </div>
+    </div>
+
+    <div class="mt-10 card">
+      <div class="grid md:grid-cols-3 gap-6 text-sm">
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-muted mb-2">On-chain</div>
+          <p class="text-soft">Anchor program · two PDA types · all SBF code public · zero off-chain trust required to read.</p>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-muted mb-2">Off-chain</div>
+          <p class="text-soft">ARMS spatial memory fabric (Rust) · Axum HTTP service · locus-relayer keeps Merkle root in sync.</p>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-[0.18em] text-muted mb-2">Economics</div>
+          <p class="text-soft">Pay-per-query SOL fees · protocol take 5–10% · long-tail compliance licensing on top.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

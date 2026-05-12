@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="404 — Locus">
+  <section class="container-x py-32 md:py-40 text-center">
+    <div class="badge mb-6"><span class="dot-pulse"></span><span>404</span></div>
+    <h1 class="text-5xl md:text-7xl font-bold text-white tracking-tight">Memory not found.</h1>
+    <p class="mt-6 text-lg text-soft max-w-lg mx-auto">
+      Either the coordinate doesn't exist, the root isn't committed, or you mistyped the URL.
+    </p>
+    <div class="mt-10 flex justify-center gap-3">
+      <a href="/" class="btn-primary">Back to Locus</a>
+      <a href="/whitepaper" class="btn">Read the whitepaper</a>
+    </div>
+  </section>
+</Layout>

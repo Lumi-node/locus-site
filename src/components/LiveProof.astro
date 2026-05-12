@@ -1,0 +1,52 @@
+---
+const PROGRAM_ID = 'C6AJ43ZpzPLtmcwDS1FQP7cQXtWHNwsLty5ijdLTxzmK';
+const COMMIT_TX = '3EJotznRcuofQmoKy1PgDBqZZYSUywXKth6eGRQPeGxJW6ejfhfQPPwqz9hP6N4eRWAfoxbpxMa9Tgm2RgV4AywF';
+const ATTEST_TX = '4UxWaB1TXvJdxwEfchLd7cKnAS17MhXDJ8zcfhNGzg5CLfbzYdSDghvjbQkL59zp5aoGdFGnsTJ2koKYxHxLj8iX';
+const ATTEST_PDA = '9z8SwfDQRu2Nt1wbtQooLitpb3WQXge8PzxdyYebQLVt';
+const MEMORY_ROOT = 'bd8e1419cf6699efd55d6a573f9c6a2f942a51c3c593f22e19fddf5caf8f5f16';
+const QUERY_HASH  = 'd5d98ebe29342856fb0f3e6d6412f219122e825b0f8b6164c85b72234587946f';
+const RESULT_HASH = '4553cb46fa3ec8d8aed75376d154667094cebce6e5c1ce2a3b76ac495cdd11b6';
+
+const rows = [
+  { k: 'program_id',          v: PROGRAM_ID,                                              href: `https://explorer.solana.com/account/${PROGRAM_ID}?cluster=devnet` },
+  { k: 'commit_memory tx',    v: `${COMMIT_TX.slice(0,12)}…${COMMIT_TX.slice(-6)}`,        href: `https://explorer.solana.com/tx/${COMMIT_TX}?cluster=devnet` },
+  { k: 'memory_root',         v: MEMORY_ROOT,                                             href: null },
+  { k: 'attest_retrieval tx', v: `${ATTEST_TX.slice(0,12)}…${ATTEST_TX.slice(-6)}`,        href: `https://explorer.solana.com/tx/${ATTEST_TX}?cluster=devnet` },
+  { k: 'attestation pda',     v: ATTEST_PDA,                                              href: `https://explorer.solana.com/address/${ATTEST_PDA}?cluster=devnet` },
+  { k: 'query_hash',          v: QUERY_HASH,                                              href: null },
+  { k: 'result_hash',         v: RESULT_HASH,                                             href: null },
+];
+---
+<section class="container-x py-24 md:py-32">
+  <div class="max-w-2xl mb-10">
+    <div class="badge mb-5"><span class="dot-pulse"></span><span>Proof — live devnet artifacts</span></div>
+    <h2 class="text-3xl md:text-5xl font-bold text-white tracking-tight leading-tight">
+      Every link below is a <span class="text-accent">real Solana account.</span>
+    </h2>
+    <p class="mt-6 text-lg text-soft">
+      Click any tx or PDA to inspect it on Solana Explorer. Memory commitment, retrieval, and attestation —
+      all on chain right now.
+    </p>
+  </div>
+
+  <div class="card !p-0 overflow-hidden">
+    <div class="divide-y divide-line/60">
+      {rows.map(r => (
+        <div class="grid grid-cols-[160px_1fr] md:grid-cols-[220px_1fr] items-center gap-4 px-5 md:px-7 py-3 hover:bg-accent/5 transition">
+          <div class="text-xs md:text-sm mono text-muted">{r.k}</div>
+          <div class="text-xs md:text-sm mono break-all">
+            {r.href
+              ? <a href={r.href} target="_blank" rel="noopener" class="text-accent hover:underline">{r.v}</a>
+              : <span class="text-soft">{r.v}</span>
+            }
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <p class="mt-6 text-sm text-muted">
+    Bring your own wallet, hit the program with <code class="font-mono text-accent">attest_retrieval</code>, watch a new PDA appear.
+    No login. No SDK required. Solana JSON-RPC is enough.
+  </p>
+</section>

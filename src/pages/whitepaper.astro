@@ -1,0 +1,221 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const TOC = [
+  { id: 'abstract', label: 'Abstract' },
+  { id: 'motivation', label: '1. Motivation' },
+  { id: 'design', label: '2. Design philosophy' },
+  { id: 'arms', label: '3. ARMS — the memory substrate' },
+  { id: 'protocol', label: '4. Locus — the Solana protocol' },
+  { id: 'accounts', label: '5. On-chain account model' },
+  { id: 'lifecycle', label: '6. Memory lifecycle' },
+  { id: 'economics', label: '7. Economic model' },
+  { id: 'threat', label: '8. Threat model' },
+  { id: 'related', label: '9. Related work' },
+  { id: 'roadmap', label: '10. Roadmap' },
+  { id: 'citation', label: 'Citation' },
+];
+---
+<Layout
+  title="Locus — Whitepaper"
+  description="Locus protocol whitepaper: verifiable AI memory on Solana, built on ARMS. Spec, accounts, lifecycle, threat model, economics."
+>
+  <section class="container-x pt-16 md:pt-20 pb-12">
+    <a href="/" class="text-sm text-muted hover:text-accent transition">← Back to Locus</a>
+    <div class="mt-6 badge"><span class="dot-pulse"></span><span>Whitepaper · v0.1 · 2026</span></div>
+    <h1 class="mt-5 text-4xl md:text-6xl font-bold tracking-tight text-white leading-tight">
+      Locus: Verifiable AI memory <span class="text-accent">on Solana.</span>
+    </h1>
+    <p class="mt-4 text-soft text-lg max-w-2xl">
+      Memory commitments, pay-per-query economics, and cryptographic retrieval attestations,
+      built on the open-source ARMS spatial memory fabric.
+    </p>
+    <p class="mt-6 text-sm text-muted mono">
+      Andrew Young · Automate Capture LLC · ORCID 0009-0002-3685-4289
+    </p>
+  </section>
+
+  <section class="container-x grid lg:grid-cols-[220px_1fr] gap-10 pb-24">
+    <aside class="hidden lg:block sticky top-24 self-start">
+      <div class="text-xs uppercase tracking-[0.18em] text-muted mb-3">Contents</div>
+      <ul class="space-y-2 text-sm">
+        {TOC.map(t => (
+          <li><a href={`#${t.id}`} class="text-soft hover:text-accent transition">{t.label}</a></li>
+        ))}
+      </ul>
+    </aside>
+
+    <article class="prose prose-invert max-w-none">
+      <h2 id="abstract">Abstract</h2>
+      <p>
+        Autonomous agents on Solana are stateless. The Agent Payments Protocol formalizes per-action
+        compensation, but the memory layer that informs those actions has no on-chain provenance.
+        Existing vector databases handle retrieval but treat memory as a private SaaS product —
+        opaque, off-chain, unattestable.
+      </p>
+      <p>
+        <strong>Locus</strong> is a Solana protocol that anchors memory state via Merkle roots,
+        prices retrievals in SOL via per-query fees, and emits a cryptographic attestation account
+        for every retrieval. It builds on <strong>ARMS</strong>, an open-source spatial memory fabric
+        with a published <a href="https://github.com/Lumi-node/ARMS">DOI</a> and supporting research,
+        and on <strong>HAT</strong>, the hierarchical attention tree retrieval algorithm with 100% recall
+        at 70× faster build than HNSW.
+      </p>
+      <p>
+        This document specifies the Locus protocol: account model, instruction set, lifecycle,
+        economic structure, and threat model. The reference implementation is open-source under
+        MIT at <a href="https://github.com/Lumi-node/locus">github.com/Lumi-node/locus</a>, deployed
+        to Solana devnet as program <code>C6AJ43ZpzPLtmcwDS1FQP7cQXtWHNwsLty5ijdLTxzmK</code>.
+      </p>
+
+      <h2 id="motivation">1. Motivation</h2>
+      <p>
+        The autonomous agent layer of Solana is being built without a memory primitive.
+        Trading agents, DAO governance delegates, DePIN coordinators, and APP-native services
+        will all make economic on-chain decisions. None of them currently produce an audit trail
+        of <em>which prior context informed each decision</em>.
+      </p>
+      <p>
+        In regulated industries — finance, healthcare, federal — this audit trail is not optional.
+        It is the difference between "AI made a decision" and "AI's decision is admissible."
+        On a public chain, the same standard applies: governance attacks, market manipulation,
+        and DePIN coordination failures all require post-hoc reconstruction of the agent's
+        decision lineage.
+      </p>
+      <p>
+        Locus exists because the audit layer for on-chain AI does not yet exist, the Agent Payments
+        Protocol made the question urgent, and Solana's account model + low cost makes per-retrieval
+        attestation economically viable.
+      </p>
+
+      <h2 id="design">2. Design philosophy</h2>
+      <ul>
+        <li><strong>Position is relationship.</strong> Memory is a coordinate problem, not a database problem. Geometry is primary; indexes are derivative.</li>
+        <li><strong>Commitments are cheap; data is not.</strong> Anchor cryptographic commitments on-chain. Hold the actual high-dimensional memory off-chain in ARMS.</li>
+        <li><strong>Attestation is the primitive.</strong> Every retrieval produces an immutable on-chain receipt. The retrieval itself, the result, and the memory state at retrieval time are all bound by hash.</li>
+        <li><strong>Verifiability is free; participation is paid.</strong> Anyone with a Solana RPC can read attestations without permission. Writing an attestation costs SOL, paid to the agent owner.</li>
+        <li><strong>The chain is a coordination surface, not a storage layer.</strong> Locus does not try to fit memory contents into a Solana account.</li>
+      </ul>
+
+      <h2 id="arms">3. ARMS — the memory substrate</h2>
+      <p>
+        ARMS (Attention Reasoning Memory Store) is the open-source spatial memory fabric Locus
+        anchors. The full ARMS specification is published separately
+        (<a href="https://github.com/Lumi-node/ARMS">github.com/Lumi-node/ARMS</a>, DOI on Zenodo).
+        For Locus's purposes the relevant interface is minimal:
+      </p>
+      <ul>
+        <li><code>place(point, payload) → id</code> — insert a point at its native coordinate.</li>
+        <li><code>near(point, k) → ids</code> — retrieve the <em>k</em> nearest neighbors.</li>
+        <li><code>state_root() → [u8; 32]</code> — Merkle root of the current memory state.</li>
+      </ul>
+      <p>
+        Retrieval is powered by <strong>HAT</strong>, the Hierarchical Attention Tree algorithm.
+        HAT achieves 100% recall on benchmark conversation data at 70× faster build than HNSW.
+        The productized variant ("infinite-context") provides 11M+ tokens of context to local
+        language models at 0.51 ms retrieval latency.
+      </p>
+
+      <h2 id="protocol">4. Locus — the Solana protocol</h2>
+      <p>
+        Locus is an Anchor program (Rust, Solana 2.x, Anchor 0.31.1) deployed at a single
+        program ID. Three actor roles interact with it:
+      </p>
+      <ul>
+        <li><strong>Agent owner</strong> — controls an <code>AgentMemory</code> PDA, posts memory commitments, sets the read fee.</li>
+        <li><strong>Requester</strong> — anyone with a Solana wallet; pays the read fee to obtain an attested retrieval.</li>
+        <li><strong>Reader</strong> — anyone with a Solana RPC; reads attestation accounts freely, no transactions or signing required.</li>
+      </ul>
+
+      <h2 id="accounts">5. On-chain account model</h2>
+      <p>The program defines two PDA types.</p>
+
+      <h3><code>AgentMemory</code> PDA</h3>
+      <ul>
+        <li>Seeds: <code>[b"agent", owner.key()]</code></li>
+        <li>Fields: <code>owner: Pubkey</code>, <code>memory_root: [u8; 32]</code>, <code>version: u64</code>, <code>last_updated: i64</code>, <code>read_fee_lamports: u64</code>, <code>write_count: u64</code>, <code>read_count: u64</code>, <code>metadata_uri: String (≤200 chars)</code>, <code>bump: u8</code></li>
+        <li>One per agent owner. Rent paid by owner on initialization, refunded on close.</li>
+      </ul>
+
+      <h3><code>RetrievalAttestation</code> PDA</h3>
+      <ul>
+        <li>Seeds: <code>[b"attest", agent_memory.key(), version, nonce]</code></li>
+        <li>Fields: <code>agent</code>, <code>memory_root</code>, <code>version</code>, <code>query_hash</code>, <code>result_hash</code>, <code>requester</code>, <code>timestamp</code>, <code>nonce</code>, <code>bump</code></li>
+        <li>One per retrieval. Immutable after creation. Rent paid by requester.</li>
+      </ul>
+
+      <h2 id="lifecycle">6. Memory lifecycle</h2>
+      <ol>
+        <li><strong>initialize_agent</strong> — owner creates the <code>AgentMemory</code> PDA, sets initial <code>read_fee_lamports</code> and optional <code>metadata_uri</code>.</li>
+        <li><strong>(off-chain)</strong> owner runs an ARMS instance and populates it with memory points.</li>
+        <li><strong>commit_memory(root)</strong> — owner posts a 32-byte Merkle root of the current ARMS state. Version increments. <code>MemoryCommitted</code> event emitted.</li>
+        <li><strong>(off-chain)</strong> requester queries ARMS via HTTP, obtains the neighbor result set.</li>
+        <li><strong>attest_retrieval(query_hash, result_hash, nonce)</strong> — requester pays <code>read_fee_lamports</code> from their wallet to the owner via System Program CPI. New <code>RetrievalAttestation</code> PDA is created with the four hashes (query, result, root, version). <code>RetrievalAttested</code> event emitted.</li>
+        <li><strong>update_read_fee</strong> — owner adjusts pricing.</li>
+        <li><strong>close_agent</strong> — owner closes the agent; rent refunded; existing attestations remain readable.</li>
+      </ol>
+
+      <h2 id="economics">7. Economic model</h2>
+      <p>
+        Locus has three revenue surfaces, in order of near-term to long-term:
+      </p>
+      <ol>
+        <li><strong>Pay-per-query fees.</strong> Every <code>attest_retrieval</code> transfers <code>read_fee_lamports</code> from requester to owner. The protocol takes 5–10% (parameterized at mainnet; currently 0% on devnet).</li>
+        <li><strong>Hosted ARMS service.</strong> Premium hosting for agent teams who don't want to operate their own ARMS node, billed in SOL or fiat.</li>
+        <li><strong>Enterprise / compliance licensing.</strong> Regulated workloads (finance, healthcare, federal national security) that require AI decision lineage with cryptographic provenance. Off-chain B2B revenue, on-chain artifact.</li>
+      </ol>
+      <p>
+        The choice to denominate the read fee in lamports is deliberate: it ties memory economics
+        to the same unit as the rest of the Solana economy and lets agent operators set the price
+        of their memory in the same currency they're paid in.
+      </p>
+
+      <h2 id="threat">8. Threat model</h2>
+      <p>
+        Locus makes a specific set of guarantees and explicitly does not make others. The honest
+        version of "what is verified":
+      </p>
+      <ul>
+        <li><strong>Verified.</strong> At Solana time <em>T</em>, a transaction was submitted by requester <em>R</em>, paid fee <em>F</em> to owner <em>O</em>, and recorded query hash <em>Qh</em> and result hash <em>Rh</em> against memory root <em>M</em> at version <em>V</em>. This is a permanent on-chain fact.</li>
+        <li><strong>Not verified (v0.1).</strong> That the kNN computation was correct. That the result <em>actually</em> corresponds to the query under the indexed ARMS state. Closing this gap requires either a zero-knowledge proof of retrieval (planned v2) or an honest-majority committee of operators (out of scope).</li>
+        <li><strong>Trust assumption.</strong> The agent owner is honest about their own memory state. Requesters who pay for attestations are trusting that the owner's ARMS instance returned the result it claims to have returned. Future versions tighten this.</li>
+      </ul>
+      <p>
+        For the use cases Locus targets in v0.1 — accountability and audit, not adversarial proof —
+        these guarantees are sufficient. A trading agent that signs an attestation is committing to
+        a public claim that can be cross-checked against on-chain action.
+      </p>
+
+      <h2 id="related">9. Related work</h2>
+      <ul>
+        <li><strong>Vector databases</strong> (Pinecone, Weaviate, Qdrant, Chroma): treat memory as a private SaaS database. No on-chain provenance, no pay-per-query economics, no verifiability.</li>
+        <li><strong>LLM memory frameworks</strong> (LangChain memory, LlamaIndex): in-process key-value stores. No persistence guarantees, no audit, no economic layer.</li>
+        <li><strong>Memo-as-NFT experiments on Solana</strong>: treat memory as record-keeping. Wrong primitive; agents need to retrieve by proximity, not by primary key.</li>
+        <li><strong>ZK ML / verifiable inference research</strong>: relevant for v2 (proving retrieval correctness). Currently impractical for high-dimensional spatial queries at any meaningful scale.</li>
+      </ul>
+
+      <h2 id="roadmap">10. Roadmap</h2>
+      <ol>
+        <li><strong>v0.1 (current, devnet)</strong> — Anchor program live, end-to-end Helius wallet-similarity demo, attestation receipts on devnet.</li>
+        <li><strong>v0.2 (mainnet)</strong> — Protocol take on read fees enabled. First 10 agent teams integrated. Hosted ARMS service launches.</li>
+        <li><strong>v0.3 (DePIN)</strong> — Multiple-operator ARMS coordination. Token incentives for node operators. Optional witness committee for retrieval correctness.</li>
+        <li><strong>v0.4 (ZK retrieval)</strong> — Replace <code>result_hash</code> with a SNARK proving the result is a valid kNN under the committed memory root. Trustless attestations.</li>
+      </ol>
+
+      <h2 id="citation">Citation</h2>
+      <pre><code>{`@misc{young2026locus,
+  author       = {Young, Andrew},
+  title        = {Locus: Verifiable AI Memory on Solana},
+  year         = {2026},
+  publisher    = {GitHub},
+  howpublished = {\\url{https://github.com/Lumi-node/locus}},
+  note         = {Solana Frontier Hackathon submission},
+}`}</code></pre>
+
+      <p class="text-sm text-muted">
+        v0.1 · 2026-05-12 · MIT licensed · Source:
+        <a href="https://github.com/Lumi-node/locus-site">github.com/Lumi-node/locus-site</a>
+      </p>
+    </article>
+  </section>
+</Layout>

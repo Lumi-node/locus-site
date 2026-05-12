@@ -1,0 +1,107 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title = 'Locus — verifiable AI memory on Solana',
+  description = 'The audit layer for AI-driven on-chain actions. Memory commitments, pay-per-query economics, cryptographic retrieval attestations — built on ARMS, deployed on Solana devnet.',
+  ogImage = '/locus-logo.png',
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="generator" content={Astro.generator} />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="canonical" href={canonicalURL.toString()} />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={new URL(ogImage, Astro.site).toString()} />
+  <meta property="og:url" content={canonicalURL.toString()} />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={new URL(ogImage, Astro.site).toString()} />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+</head>
+<body class="min-h-screen flex flex-col">
+  <slot name="nav">
+    <nav class="border-b border-line/60 backdrop-blur-md sticky top-0 z-50 bg-ink/70">
+      <div class="container-x flex items-center justify-between h-16">
+        <a href="/" class="flex items-center gap-3 group">
+          <span class="dot-pulse"></span>
+          <span class="font-bold text-bright tracking-tight text-lg group-hover:text-accent transition">Locus</span>
+          <span class="hidden md:inline text-xs uppercase tracking-[0.2em] text-muted">verifiable memory · solana</span>
+        </a>
+        <div class="flex items-center gap-2 md:gap-4 text-sm">
+          <a href="/whitepaper" class="text-soft hover:text-accent transition hidden sm:inline">Whitepaper</a>
+          <a href="https://github.com/Lumi-node/locus" target="_blank" rel="noopener" class="text-soft hover:text-accent transition">GitHub</a>
+          <a href="https://explorer.solana.com/account/C6AJ43ZpzPLtmcwDS1FQP7cQXtWHNwsLty5ijdLTxzmK?cluster=devnet" target="_blank" rel="noopener" class="btn-primary text-xs">
+            Live on Devnet
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
+          </a>
+        </div>
+      </div>
+    </nav>
+  </slot>
+
+  <main class="flex-1">
+    <slot />
+  </main>
+
+  <footer class="border-t border-line/60 mt-24">
+    <div class="container-x py-12 grid md:grid-cols-3 gap-8">
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="dot-pulse"></span>
+          <span class="font-bold text-bright tracking-tight">Locus</span>
+        </div>
+        <p class="text-sm text-muted max-w-xs">The audit layer for AI-driven on-chain actions. Built on ARMS — a spatial memory fabric in Rust.</p>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-[0.18em] text-muted mb-3">Protocol</div>
+        <ul class="space-y-2 text-sm">
+          <li><a class="text-soft hover:text-accent" href="/whitepaper">Whitepaper</a></li>
+          <li><a class="text-soft hover:text-accent" target="_blank" rel="noopener" href="https://github.com/Lumi-node/locus">Source code</a></li>
+          <li><a class="text-soft hover:text-accent" target="_blank" rel="noopener" href="https://explorer.solana.com/account/C6AJ43ZpzPLtmcwDS1FQP7cQXtWHNwsLty5ijdLTxzmK?cluster=devnet">Live program</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-[0.18em] text-muted mb-3">Research</div>
+        <ul class="space-y-2 text-sm">
+          <li><a class="text-soft hover:text-accent" target="_blank" rel="noopener" href="https://github.com/Lumi-node/ARMS">ARMS</a></li>
+          <li><a class="text-soft hover:text-accent" target="_blank" rel="noopener" href="https://github.com/Lumi-node/HAT">HAT</a></li>
+          <li><a class="text-soft hover:text-accent" target="_blank" rel="noopener" href="https://huggingface.co/AutomateCapture">HuggingFace</a></li>
+          <li><a class="text-soft hover:text-accent" target="_blank" rel="noopener" href="https://orcid.org/0009-0002-3685-4289">ORCID</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-line/60">
+      <div class="container-x py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted mono">
+        <span>© 2026 Automate Capture LLC · MIT licensed</span>
+        <span>Built on <a class="text-accent" target="_blank" rel="noopener" href="https://github.com/Lumi-node/ARMS">ARMS</a> · deployed to Solana devnet</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

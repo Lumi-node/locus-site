@@ -1,0 +1,49 @@
+---
+const cases = [
+  {
+    tag: '01',
+    title: 'Trading agents',
+    body: "When an autonomous agent makes a $10K on-chain decision, the attestation PDA records exactly which memories shaped it. Reconstruct decision lineage. Audit. Insure.",
+  },
+  {
+    tag: '02',
+    title: 'Governance agents',
+    body: "DAO votes are increasingly delegated to AI. Locus lets the delegate prove which proposals, votes, and discussions informed each new vote. Audit a governance agent like a human delegate.",
+  },
+  {
+    tag: '03',
+    title: 'DePIN coordinators',
+    body: "Multi-agent fleets sharing operational memory across nodes need a verifiable common substrate. The on-chain Merkle root is the consistency primitive.",
+  },
+  {
+    tag: '04',
+    title: 'Compliance auditors',
+    body: "Reading attestation PDAs is free — anyone with a Solana RPC can reconstruct an agent's decision history. Audit-as-a-service without trusted intermediaries.",
+  },
+];
+---
+<section class="container-x py-24 md:py-32">
+  <div class="max-w-2xl">
+    <div class="badge mb-5"><span class="dot-pulse"></span><span>Who this is for</span></div>
+    <h2 class="text-3xl md:text-5xl font-bold text-white tracking-tight leading-tight">
+      The audit layer for <span class="text-accent">on-chain agents.</span>
+    </h2>
+    <p class="mt-6 text-lg text-soft">
+      Same primitive — memory commitments plus paid attested retrievals — solves four different
+      on-chain problems.
+    </p>
+  </div>
+
+  <div class="mt-12 grid md:grid-cols-2 gap-5">
+    {cases.map(c => (
+      <div class="hover-card">
+        <div class="flex items-center justify-between">
+          <span class="text-xs mono text-muted">{c.tag}</span>
+          <span class="text-[10px] uppercase tracking-[0.2em] text-accent/70">primitive · same</span>
+        </div>
+        <h3 class="text-2xl font-semibold text-white mt-3">{c.title}</h3>
+        <p class="mt-3 text-soft leading-relaxed text-[15px]">{c.body}</p>
+      </div>
+    ))}
+  </div>
+</section>
